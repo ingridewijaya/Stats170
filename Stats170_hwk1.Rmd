@@ -1,0 +1,96 @@
+---
+title: "Stats170_Hwk_1"
+author: "Shiqi Liang, Ingrid Wijaya, Jessica Wong"
+output: pdf_document
+---
+### GROUP MEMBERS
+Shiqi Liang \
+Ingrid Wijaya \
+Jessica Wong 
+
+### DATA SOURCE
+
+FRED Total Business Sales(TOTBUSSMNSA) \
+FRED Average Hourly Earnings of Production and Nonsupervisory Employees, Total Private (CEU0500000008) \
+FRED Unemployment Rate (UNRATE) 
+
+### Loading packages
+```{r}
+library(ggplot2)
+library(Quandl)
+```
+
+### Loaing data from Quandl
+Since we are only considering none-Covid years, we have decided to only look at data before Jan 2020.
+```{r}
+biz_sales = Quandl(code="FRED/TOTBUSSMNSA",
+            type="ts",
+            collapse="monthly",
+            order="asc",
+            end_date="2019-12-31",
+            meta=TRUE)
+
+avg_hr_sal = Quandl(code="FRED/CEU0500000008",
+            type="ts",
+            collapse="monthly",
+            order="asc",
+            end_date="2019-12-31",
+            meta=TRUE)
+
+unrate =  Quandl(code="FRED/UNRATE",
+            type="ts",
+            collapse="monthly",
+            order="asc",
+            end_date="2019-12-31",
+            meta=TRUE)
+
+```
+
+### Creating a dataframe with the intersect, and create training and testing set
+```{r}
+full = ts.intersect(biz_sales,avg_hr_sal,unrate)
+train = window(full,start = c(1992,1), end = c(2018,12))
+test = window(full,start = c(2019,1), end=c(2019,12))
+```
+
+### Creating a table that stores relavent information
+```{r}
+info = data.frame(name = c('biz_sales','avg_hr_sal','unrate'),
+                  variable_short_name =      c('FRED/TOTBUSSMNSA','FRED/CEU0500000008','FRED/UNRATE'),
+                  description = c('Total business sales within the United States by month','average hourly earnings of production and nonsupervisory employees in the private sector of the United Stats by month', 'unemployment rate in the United States by month'),
+                  training_time_interval = c('1992-1 to 2018-12','1992-1 to 2018-12','1992-1 to 2018-12'),
+                  testing_time_interval = c('2019-1 to 2019-12','2019-1 to 2019-12','2019-1 to 2019-12'))
+
+info
+```
+
+### Part D:
+```{r}
+ts.plot(train[,'biz_sales'],main = 'total business sales',ylab = 'sales in millions of dollars')
+
+season <- cycle(train[,'biz_sales'])
+season.factor <-factor(season)
+ggplot()+
+  geom_boxplot(mapping = aes(x = season.factor,y=train[,'biz_sales']))+labs(x = 'month',y = 'business sales in millions of dollars')
+```
+There is a strong upward trend. We can see  small seasonal component in business sales, although it is important to point out that in the seasonal box plots the boxes overlap each other, so we can not say the seasonal component is very obvious.
+
+```{r}
+ts.plot(train[,'avg_hr_sal'],main = 'Average Hourly Wage',ylab = 'Dollars per Hour')
+
+season <- cycle(train[,'avg_hr_sal'])
+season.factor <-factor(season)
+ggplot()+
+  geom_boxplot(mapping = aes(x = season.factor,y=train[,'avg_hr_sal']))+labs(x = 'month',y = 'Average Hourly Wage')
+```
+There is a strong upward trend and no obvious seasonal component is present. This is quiet expected since hourly wages are expected to remain relatively stable through out the year. 
+
+```{r}
+ts.plot(train[,'unrate'],main = 'Unemployment Rate',ylab = 'Percent')
+
+season <- cycle(train[,'unrate'])
+season.factor <-factor(season)
+ggplot()+
+  geom_boxplot(mapping = aes(x = season.factor,y=train[,'unrate']))+labs(x = 'month',y = 'Unemployment Rate')
+```
+There seems to be a few spikes in unemployment rate (possibly caused by economic crisis) but we can observe that there isn't a seasonal component in unemployment rates, possibly due to the fact that employment rate should be relatively stable throughout the year (except in times of economic crisis)
