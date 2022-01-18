@@ -94,3 +94,42 @@ ggplot()+
   geom_boxplot(mapping = aes(x = season.factor,y=train[,'unrate']))+labs(x = 'month',y = 'Unemployment Rate')
 ```
 There seems to be a few spikes in unemployment rate (possibly caused by economic crisis) but we can observe that there isn't a seasonal component in unemployment rates, possibly due to the fact that employment rate should be relatively stable throughout the year (except in times of economic crisis)
+
+### Part E 
+Dependent variable
+: business sales
+
+Independent variable
+: Average Hourly Earnings of Production and Nonsupervisory Employees
+: Unemployment Rate
+
+Referring to the time plot of business sales, due to increasing trend and increasing seasonality, we chose to do multiplicative decomposition. 
+
+```{r}
+sales_decomp = decompose(train[,'biz_sales'], type = "mult") 
+plot(sales_decomp)
+
+sales_trend = sales_decomp$trend
+sales_season = sales_decomp$seasonal
+sales_ran = sales_decomp$random
+
+plot(sales_trend,main="Trend Component of Business Sales",ylab="sales in millions of dollars")
+plot(sales_season,main="Seasonal component of Business Sales",ylab="BS-trend")
+plot(sales_ran,main="Random component of Business Sales", ylab="BS-trend-seasonal")
+```
+From the plots above, some notable points are:  
+
+1. The trend plot shows that there is a dip in business sales between 2007 and 2010,
+which can indicate an economic crisis.   
+
+2. The random plot shows that it is randomly fluctuating around a constant, indicating that multiplicative decomposition is appropriate. We observed that between 2007 and 2010, the random component has a strikingly large fluctuation compared to the rest, the same time period business sales decreased rapidly.
+
+### Part F
+```{r}
+## random part 
+new_sales_ran = window(sales_ran, start=c(1992,7), end=c(2018,6))
+acf(new_sales_ran, main="ACF of Random Component of Business Sales")
+```
+Referring to the ACF plot, there are several autocorrelation that are above the
+blue band, indicating that they are statistically significant.
+
