@@ -71,7 +71,9 @@ ts.plot(train[,'biz_sales'],main = 'total business sales',ylab = 'sales in milli
 season <- cycle(train[,'biz_sales'])
 season.factor <-factor(season)
 ggplot()+
-  geom_boxplot(mapping = aes(x = season.factor,y=train[,'biz_sales']))+labs(x = 'month',y = 'business sales in millions of dollars')
+  geom_boxplot(mapping = aes(x = season.factor,y=train[,'biz_sales']))+labs(x = 'month',y = 'business sales in millions of dollars') + 
+    ggtitle("Seasonal Boxplot of Business Sales") +
+      theme(plot.title = element_text(hjust = 0.5))
 ```
 There is a strong upward trend. We can see  small seasonal component in business sales, although it is important to point out that in the seasonal box plots the boxes overlap each other, so we can not say the seasonal component is very obvious.
 
@@ -81,7 +83,9 @@ ts.plot(train[,'avg_hr_sal'],main = 'Average Hourly Wage',ylab = 'Dollars per Ho
 season <- cycle(train[,'avg_hr_sal'])
 season.factor <-factor(season)
 ggplot()+
-  geom_boxplot(mapping = aes(x = season.factor,y=train[,'avg_hr_sal']))+labs(x = 'month',y = 'Average Hourly Wage')
+  geom_boxplot(mapping = aes(x = season.factor,y=train[,'avg_hr_sal']))+labs(x = 'month',y = 'Average Hourly Wage') + 
+    ggtitle("Seasonal box plot of Average Hourly Wage") +
+      theme(plot.title = element_text(hjust = 0.5))
 ```
 There is a strong upward trend and no obvious seasonal component is present. This is quiet expected since hourly wages are expected to remain relatively stable through out the year. 
 
@@ -91,7 +95,9 @@ ts.plot(train[,'unrate'],main = 'Unemployment Rate',ylab = 'Percent')
 season <- cycle(train[,'unrate'])
 season.factor <-factor(season)
 ggplot()+
-  geom_boxplot(mapping = aes(x = season.factor,y=train[,'unrate']))+labs(x = 'month',y = 'Unemployment Rate')
+  geom_boxplot(mapping = aes(x = season.factor,y=train[,'unrate']))+labs(x = 'month',y = 'Unemployment Rate') + 
+    ggtitle("Seasonal box plot of Unemployment Rate") +
+      theme(plot.title = element_text(hjust = 0.5))
 ```
 There seems to be a few spikes in unemployment rate (possibly caused by economic crisis) but we can observe that there isn't a seasonal component in unemployment rates, possibly due to the fact that employment rate should be relatively stable throughout the year (except in times of economic crisis)
 
