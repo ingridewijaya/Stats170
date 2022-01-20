@@ -183,10 +183,17 @@ We are able to notice both trend and seasonality present, which would obscure th
 ```{r}
 ##### Finding the ACF of the random component
 new_sales_ran = window(sales_ran, start = c(1992, 7), end = c(2018, 6))
-acf(new_sales_ran, main = "ACF of Random Component of Business Sales")
+acf(new_sales_ran, main = 'ACF of Random Component of Business Sales')
+```
+Referring to the sample ACF plot, there are several autocorrelation that are outside the two blue bands, indicating that they are statistically significant.
+
+```{r}
+##### Finding the PACF of the random component
+pacf(new_sales_ran, main = 'PACF of Random Component of Business Sales')
 ```
 
-Referring to the sample ACF plot, there are several autocorrelations that are outside the two blue bands, indicating that they are statistically significant.
+Referring to the sample ACF plot, AR model because there is a lot of 
+autocorrelation that are significant. 
 
 ## (g)
 
