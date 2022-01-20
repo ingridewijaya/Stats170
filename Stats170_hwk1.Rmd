@@ -191,30 +191,57 @@ Referring to the sample ACF plot, there are several autocorrelations that are ou
 ## (g)
 
 ```{r}
+sales = train[, 'biz_sales']
+log_sales = log(train[, 'biz_sales'])
 
-ts.plot(train[, 'biz_sales'],
+##### Time plot of variable: Total business sales in the U.S.
+ts.plot(sales,
         main = 'Total business sales in the U.S.',
         ylab = 'Sales in millions of dollars')
 
-ts.plot(log(train[, 'biz_sales']),
+##### Time plot of variable: Log Transformation of Total business sales in the U.S.
+ts.plot(log_sales,
         main = 'Log of Total business sales in the U.S.',
         ylab = 'Log of Sales in millions of dollars')
+
+##### Comparison of Time plot of variable: Total business sales in the U.S. 
+##### before and after Log Transformation
+comparison = cbind(sales, log_sales)
+plot.ts(comparison, 
+        main = 'Before and After Log Transformation of Total business sales in the U.S.')
 ```
 
 Looking at the plot, we can see that trend has increasing variability, although not a lot except for around the financial crisis of 2008. We can do a log transformation to make variability relatively constant. 
 ```{r}
-ts.plot(diff(log(train[, 'biz_sales']),lg=1,differences = 1),
-        main = 'Log of Total business sales in the U.S after differencing.',
-        ylab = 'Log of Sales in millions of dollars after differencing')
+##### First regular difference to account for trend
+first_diff = diff(log_sales, lag = 1, differences = 1)
+ts.plot(first_diff,
+        main = 'Log of Total business sales in the U.S after first differencing.',
+        ylab = 'Differenced log sales')
 #after doing the first difference, we see that the trend no longer exist
 ```
+
 ```{r}
-ts.plot(diff(diff(log(train[, 'biz_sales']),lg=1,differences = 1),lag=12),
-        main = 'Log of Total business sales in the U.S after differencing.',
-        ylab = 'Log of Sales in millions of dollars after differencing')
+##### Seasonal difference to account for seasonal
+seasonal_first_diff = diff(first_diff, lag = 12)
+ts.plot(seasonal_first_diff,
+        main = paste('Log of Total business sales in the U.S',
+                     '\nafter seasonally-differenced first-differenced'),
+        ylab = 'Seasonal diff of first diff of log sales')
 #After doing seasonal differencing we see that the seasonal component is no longer very prominent, although around the 2008 financial crisis there is still considerable amoung of variability. 
-c = decompose(diff(diff(log(train[, 'biz_sales']),lg=1,differences = 1),lag=12))
-acf(c$random,na.action = na.pass)
-pacf(c$random,na.action = na.pass)
+
+#### Decomposition of time series 
+c = decompose(seasonal_first_diff)
+
+#### ACF of random term left 
+acf(c$random, 
+    main = 'ACF of random term left', 
+    na.action = na.pass)
+
+#### PACF of random term left 
+pacf(c$random, 
+     main = 'PACF of random term left', 
+     na.action = na.pass)
 ```
-As we can see there are multiple significant acf, which suggests that this is an AR model. From the pacf we see that there are multiple significant partial autocorrelation which suggest that we are not dealing with AR(1). However, since from our time plot we see that we are not able to get rid of all the seasonal trend, the model is probbaly not very high in order as we see in the pacf plot as of now. So, we suggest it is a AR(5) model. 
+As we can see there are multiple significant acf, which suggests that this is an AR model. From the pacf we see that there are multiple significant partial autocorrelation which suggest that we are not dealing with AR(1). However, since from our time plot we see that we are not able to get rid of all the seasonal trend, the model is probably not very high in order as we see in the pacf plot as of now. So, we suggest it is a AR(5) model. 
+
