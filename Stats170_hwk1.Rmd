@@ -1,96 +1,220 @@
 ---
-title: "Stats170_Hwk_1"
+title: "Stat 170 Homework 1"
 author: "Shiqi Liang, Ingrid Wijaya, Jessica Wong"
 output: pdf_document
 ---
-### GROUP MEMBERS
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Group Members
+
 Shiqi Liang \
 Ingrid Wijaya \
-Jessica Wong 
+Jessica Wong
 
-### DATA SOURCE
+## (a) and (b)
+
+### Data Sources: Database and Variable Names
 
 FRED Total Business Sales(TOTBUSSMNSA) \
 FRED Average Hourly Earnings of Production and Nonsupervisory Employees, Total Private (CEU0500000008) \
-FRED Unemployment Rate (UNRATE) 
+FRED Unemployment Rate (UNRATENSA)
 
-### Loading packages
-```{r}
+```{r, message = FALSE}
+##### Loading packages
 library(ggplot2)
 library(Quandl)
+library(kableExtra)
+##### Loading data from Quandl
+##### Since we are only considering non-COVID years, we have
+##### decided to only look at data before Jan 2020.
+biz_sales = Quandl(code = "FRED/TOTBUSSMNSA",
+            type = "ts",
+            collapse = "monthly",
+            order = "asc",
+            end_date = "2019-12-31",
+            meta = TRUE)
+avg_hr_sal = Quandl(code = "FRED/CEU0500000008",
+            type = "ts",
+            collapse = "monthly",
+            order = "asc",
+            end_date = "2019-12-31",
+            meta = TRUE)
+unrate =  Quandl(code = "FRED/UNRATENSA",
+            type = "ts",
+            collapse = "monthly",
+            order = "asc",
+            end_date = "2019-12-31",
+            meta = TRUE)
+##### Creating a table that stores relevant information
+description1 = 'Total business sales within the United States by month'
+description2 = paste('Average hourly earnings of production and',
+                     'nonsupervisory employees in the private sector',
+                     'of the United States by month')
+description3 = 'Unemployment rate in the United States by month'
+info = data.frame(variable_short_name = c('FRED/TOTBUSSMNSA',
+                                          'FRED/CEU0500000008',
+                                          'FRED/UNRATE'),
+                  description = c(description1, description2,
+                                  description3),
+                  training_time_interval = c('1992-1 to 2018-12',
+                                             '1992-1 to 2018-12',
+                                             '1992-1 to 2018-12'),
+                  testing_time_interval = c('2019-1 to 2019-12',
+                                            '2019-1 to 2019-12',
+                                            '2019-1 to 2019-12'))
+column_spec(kable(info), column = 2, width = "1.5in")
 ```
 
-### Loaing data from Quandl
-Since we are only considering none-Covid years, we have decided to only look at data before Jan 2020.
-```{r}
-biz_sales = Quandl(code="FRED/TOTBUSSMNSA",
-            type="ts",
-            collapse="monthly",
-            order="asc",
-            end_date="2019-12-31",
-            meta=TRUE)
-
-avg_hr_sal = Quandl(code="FRED/CEU0500000008",
-            type="ts",
-            collapse="monthly",
-            order="asc",
-            end_date="2019-12-31",
-            meta=TRUE)
-
-unrate =  Quandl(code="FRED/UNRATE",
-            type="ts",
-            collapse="monthly",
-            order="asc",
-            end_date="2019-12-31",
-            meta=TRUE)
-
-```
-
-### Creating a dataframe with the intersect, and create training and testing set
-```{r}
-full = ts.intersect(biz_sales,avg_hr_sal,unrate)
-train = window(full,start = c(1992,1), end = c(2018,12))
-test = window(full,start = c(2019,1), end=c(2019,12))
-```
-
-### Creating a table that stores relavent information
-```{r}
-info = data.frame(name = c('biz_sales','avg_hr_sal','unrate'),
-                  variable_short_name =      c('FRED/TOTBUSSMNSA','FRED/CEU0500000008','FRED/UNRATE'),
-                  description = c('Total business sales within the United States by month','average hourly earnings of production and nonsupervisory employees in the private sector of the United Stats by month', 'unemployment rate in the United States by month'),
-                  training_time_interval = c('1992-1 to 2018-12','1992-1 to 2018-12','1992-1 to 2018-12'),
-                  testing_time_interval = c('2019-1 to 2019-12','2019-1 to 2019-12','2019-1 to 2019-12'))
-
-info
-```
-
-### Part D:
-```{r}
-ts.plot(train[,'biz_sales'],main = 'total business sales',ylab = 'sales in millions of dollars')
-
-season <- cycle(train[,'biz_sales'])
-season.factor <-factor(season)
-ggplot()+
-  geom_boxplot(mapping = aes(x = season.factor,y=train[,'biz_sales']))+labs(x = 'month',y = 'business sales in millions of dollars')
-```
-There is a strong upward trend. We can see  small seasonal component in business sales, although it is important to point out that in the seasonal box plots the boxes overlap each other, so we can not say the seasonal component is very obvious.
+## (c)
 
 ```{r}
-ts.plot(train[,'avg_hr_sal'],main = 'Average Hourly Wage',ylab = 'Dollars per Hour')
-
-season <- cycle(train[,'avg_hr_sal'])
-season.factor <-factor(season)
-ggplot()+
-  geom_boxplot(mapping = aes(x = season.factor,y=train[,'avg_hr_sal']))+labs(x = 'month',y = 'Average Hourly Wage')
+##### Creating a data frame with the intersection of the dates,
+##### and creating training and testing data sets
+full = ts.intersect(biz_sales, avg_hr_sal, unrate)
+train = window(full, start = c(1992, 1), end = c(2018, 12))
+test = window(full, start = c(2019, 1), end = c(2019, 12))
 ```
-There is a strong upward trend and no obvious seasonal component is present. This is quiet expected since hourly wages are expected to remain relatively stable through out the year. 
+
+## (d)
 
 ```{r}
-ts.plot(train[,'unrate'],main = 'Unemployment Rate',ylab = 'Percent')
-
-season <- cycle(train[,'unrate'])
-season.factor <-factor(season)
-ggplot()+
-  geom_boxplot(mapping = aes(x = season.factor,y=train[,'unrate']))+labs(x = 'month',y = 'Unemployment Rate')
+##### Time plot of variable: Total business sales in the U.S.
+ts.plot(train[, 'biz_sales'],
+        main = 'Total business sales in the U.S.',
+        ylab = 'Sales in millions of dollars')
 ```
-There seems to be a few spikes in unemployment rate (possibly caused by economic crisis) but we can observe that there isn't a seasonal component in unemployment rates, possibly due to the fact that employment rate should be relatively stable throughout the year (except in times of economic crisis)
+
+The time plot of total business sales in the U.S. displays a strong upward trend. There also seems to be a small seasonal component visible, which we looked into further using the seasonal box plot.
+
+```{r}
+##### Seasonal box plot of variable: Total business sales in the U.S.
+y = train[, 'biz_sales']
+boxplot(y ~ cycle(y),
+        main = 'Seasonal boxplot of total business sales in the U.S.',
+        xlab = 'Month', ylab = 'Sales in millions of dollars')
+```
+
+We can still see the small seasonal component for total business sales in the U.S., although it is important to point out that all of the boxes representing each month are overlapping with one another, so we cannot say the seasonal component is very drastic.
+
+```{r}
+##### Time plot of variable: Average hourly earnings of U.S.
+##### private sector production and nonsupervisory employees
+ts.plot(train[, 'avg_hr_sal'],
+        main = paste('Average hourly earnings of U.S. private sector',
+                     '\nproduction and nonsupervisory employees'),
+        ylab = 'Average hourly earnings in dollars')
+```
+
+From the time plot, we can see a strong upward trend in the average hourly earnings of U.S. private sector production and nonsupervisory employees. No obvious seasonal component is present, but we used the seasonal box plot to double check.
+
+```{r}
+##### Seasonal box plot of variable: Average hourly earnings of U.S.
+##### private sector production and nonsupervisory employees
+y = train[, 'avg_hr_sal']
+boxplot(y ~ cycle(y),
+        main = paste('Seasonal box plot of average hourly earnings of U.S.',
+                '\nprivate sector production and nonsupervisory employees'),
+        xlab = 'Month', ylab = 'Average hourly earnings in dollars')
+```
+
+From the seasonal box plots, we can also see that there is not a noticeable seasonal component present for the average hourly earnings of U.S. private sector production and nonsupervisory employees. The boxes for each month look extremely similar to one another. This would be expected since hourly wages are expected to remain relatively stable throughout the year.
+
+```{r}
+##### Time plot of variable: Unemployment rate in the U.S.
+ts.plot(train[, 'unrate'],
+        main = 'Unemployment rate in the U.S.',
+        ylab = 'Percent')
+```
+
+Based on the time plot of unemployment rate in the U.S., there seem to be a few major spikes in unemployment rate, possibly caused by economic crises. There does not seem to be an obvious seasonal component, but we used the seasonal box plot to double check.
+
+```{r}
+##### Seasonal box plot of variable: Unemployment rate in the U.S.
+y = train[, 'unrate']
+boxplot(y ~ cycle(y),
+        main = 'Seasonal box plot of unemployment rate in the U.S.',
+        xlab = 'Month', ylab = 'Percent')
+```
+
+From the seasonal box plot, we can observe that there are mild fluctuate of unemployment rate throughout the year. It seems like it is highest Janurary, lowest around May and September. We also have some outliers for some months, and that is probably due to some financial crisis during certain years.
+
+## (e)
+
+We chose our dependent and independent variables to be the following, based on our group's interests and the finding that total business sales in the U.S. was the only variable with a noticeable seasonal component:
+
+Dependent variable
+: Total business sales in the U.S.
+
+Independent variable
+: Average hourly earnings of U.S. private sector production and nonsupervisory employees
+: Unemployment rate in the U.S.
+
+Referring to the time plot of total business sales, we determined that decomposition was appropriate due to noticeable patterns of seasonality. Due to increasing trend and increasing seasonality as visible in the time plot, we chose to perform multiplicative decomposition.
+
+```{r}
+##### Performing multiplicative decomposition on the dependent variable
+sales_decomp = decompose(train[, 'biz_sales'], type = "mult") 
+plot(sales_decomp)
+sales_trend = sales_decomp$trend
+sales_season = sales_decomp$seasonal
+sales_ran = sales_decomp$random
+plot(sales_trend,
+     main = "Trend component of total business sales in the U.S.",
+     ylab = "Sales in millions of dollars")
+plot(sales_season,
+     main = "Seasonal component of total business sales in the U.S.",
+     ylab = "Sales in millions of dollars")
+plot(sales_ran,
+     main = "Random component of total business sales in the U.S.",
+     ylab = "Sales in millions of dollars")
+```
+
+We are able to notice both trend and seasonality present, which would obscure the signal in the random component without decomposition. From the plots above, some notable points are:  
+
+1. The plot of the trend component shows a dip in business sales between 2007 and 2010, which can indicate an economic crisis. This aligns with the timing of the financial crisis of 2007-2008 and the Great Recession.
+
+2. The plot of the random component shows that it is randomly fluctuating around a constant, indicating that multiplicative decomposition was appropriate. We observed that between 2007 and 2010, the random component has a strikingly large fluctuation compared to the rest, and this was the same time period when the trend component decreased rapidly.
+
+## (f)
+
+```{r}
+##### Finding the ACF of the random component
+new_sales_ran = window(sales_ran, start = c(1992, 7), end = c(2018, 6))
+acf(new_sales_ran, main = "ACF of Random Component of Business Sales")
+```
+
+Referring to the sample ACF plot, there are several autocorrelations that are outside the two blue bands, indicating that they are statistically significant.
+
+## (g)
+
+```{r}
+
+ts.plot(train[, 'biz_sales'],
+        main = 'Total business sales in the U.S.',
+        ylab = 'Sales in millions of dollars')
+
+ts.plot(log(train[, 'biz_sales']),
+        main = 'Log of Total business sales in the U.S.',
+        ylab = 'Log of Sales in millions of dollars')
+```
+
+Looking at the plot, we can see that trend has increasing variability, although not a lot except for around the financial crisis of 2008. We can do a log transformation to make variability relatively constant. 
+```{r}
+ts.plot(diff(log(train[, 'biz_sales']),lg=1,differences = 1),
+        main = 'Log of Total business sales in the U.S after differencing.',
+        ylab = 'Log of Sales in millions of dollars after differencing')
+#after doing the first difference, we see that the trend no longer exist
+```
+```{r}
+ts.plot(diff(diff(log(train[, 'biz_sales']),lg=1,differences = 1),lag=12),
+        main = 'Log of Total business sales in the U.S after differencing.',
+        ylab = 'Log of Sales in millions of dollars after differencing')
+#After doing seasonal differencing we see that the seasonal component is no longer very prominent, although around the 2008 financial crisis there is still considerable amoung of variability. 
+c = decompose(diff(diff(log(train[, 'biz_sales']),lg=1,differences = 1),lag=12))
+acf(c$random,na.action = na.pass)
+pacf(c$random,na.action = na.pass)
+```
+As we can see there are multiple significant acf, which suggests that this is an AR model. From the pacf we see that there are multiple significant partial autocorrelation which suggest that we are not dealing with AR(1). However, since from our time plot we see that we are not able to get rid of all the seasonal trend, the model is probbaly not very high in order as we see in the pacf plot as of now. So, we suggest it is a AR(5) model. 
